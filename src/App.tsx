@@ -1,35 +1,44 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
+import { createBrowserHistory } from "history";
+import {
+  unstable_HistoryRouter as HistoryRouter,
+  Navigate,
+  Route,
+  Routes,
+} from "react-router-dom";
 
+import "./App.css";
+import AdminTemplate from "./templates/AdminTemplate";
+import DashboardAdmin from "./admin/pagesAdmin/DashboardAdmin";
+import GoogleMap from "./admin/pagesAdmin/GoogleMap";
+
+export const routeLink: any = createBrowserHistory();
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <Provider store={store}>
+        <HistoryRouter history={routeLink}>
+          {/* USER */}
+          <Routes></Routes>
+          {/* ADMIN */}
+          <Routes>
+            <Route path="admin" element={<AdminTemplate />}>
+              <Route
+                path="dashboard-admin"
+                element={<DashboardAdmin />}
+              ></Route>
+              <Route path="form"></Route>
+              <Route path="map" element={<GoogleMap />}></Route>
+            </Route>
+          </Routes>
+        </HistoryRouter>
+      </Provider>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
