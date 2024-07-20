@@ -1,35 +1,41 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import {
+  unstable_HistoryRouter as HistoryRouter,
+  Navigate,
+  Route,
+  Routes,
+} from "react-router-dom";
+import { createBrowserHistory } from "history";
+import { store } from "./redux/store";
+import { Provider } from "react-redux";
+import HomeTemplate from "./User/Templates/HomeTemplate";
+import Rooms from "./User/Components/Rooms/Rooms";
+import HomePage from "./User/Pages/HomePage";
+import RestaurantPage from "./User/Pages/RestaurantPage";
+import BlogPage from "./User/Pages/BlogPage";
+import DetailPage from "./User/Pages/DetailPage";
+
+export const routeLink: any = createBrowserHistory();
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <Provider store={store}>
+        <HistoryRouter history={routeLink}>
+          <Routes>
+            <Route path="" element={<HomeTemplate />}>
+              <Route index element={<HomePage />}></Route>
+              <Route path="room" element={<Rooms />}></Route>
+              <Route path="restaurant" element={<RestaurantPage />}></Route>
+              <Route path="blog" element={<BlogPage />}></Route>
+              <Route path="detail">
+                <Route path=":id" element={<DetailPage />}></Route>
+              </Route>
+            </Route>
+          </Routes>
+        </HistoryRouter>
+      </Provider>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
