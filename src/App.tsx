@@ -15,7 +15,7 @@ import RestaurantPage from "./User/Pages/RestaurantPage";
 import BlogPage from "./User/Pages/BlogPage";
 import DetailPage from "./User/Pages/DetailPage";
 
-import AdminTemplate from "./templates/AdminTemplate";
+import AdminTemplate from "./admin/templates/AdminTemplate";
 import DashboardAdmin from "./admin/pagesAdmin/DashboardAdmin";
 import FormAdmin from "./admin/pagesAdmin/form/FormAdmin";
 import ManageAdmin from "./admin/pagesAdmin/ManageAdmin";

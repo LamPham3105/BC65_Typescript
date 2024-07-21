@@ -1,11 +1,11 @@
 //tsrafce
 import React from "react";
 import { Outlet } from "react-router-dom";
-import HeaderHomeAdmin from "../admin/componentsAdmin/HeaderHomeAdmin";
-import FooterHomeAdmin from "../admin/componentsAdmin/FooterHomeAdmin";
-import SideBarAdmin from "../admin/componentsAdmin/SideBarAdmin";
-import DashboardAdmin from "../admin/pagesAdmin/DashboardAdmin";
-import AvatarPage from "../admin/pagesAdmin/base/AvatarPage";
+import HeaderHomeAdmin from "../componentsAdmin/HeaderHomeAdmin";
+import FooterHomeAdmin from "../componentsAdmin/FooterHomeAdmin";
+import SideBarAdmin from "../componentsAdmin/SideBarAdmin";
+import DashboardAdmin from "../pagesAdmin/DashboardAdmin";
+import AvatarPage from "../pagesAdmin/base/AvatarPage";
 
 type Props = {};
 
