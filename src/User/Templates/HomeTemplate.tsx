@@ -7,11 +7,11 @@ type Props = {};
 
 const HomeTemplate = (props: Props) => {
   return (
-    <>
+    <div className="user">
       <Header />
       <Outlet />
       <Footer />
-    </>
+    </div>
   );
 };
 

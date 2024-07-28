@@ -1,8 +1,12 @@
 import axios from "axios";
-import { TOKEN_AUTHOR, getDataTextStorage } from "../util/utilMethod";
+import {
+  TOKEN_AUTHOR,
+  TOKEN_WEB,
+  getDataTextStorage,
+} from "../util/utilMethod";
 import { routeLink } from "../App";
 
-export const DOMAIN = "https://shop.cyberlearn.vn";
+export const DOMAIN = "https://airbnbnew.cybersoft.edu.vn";
 
 export const httpClient = axios.create({
   baseURL: DOMAIN,
@@ -11,13 +15,14 @@ export const httpClient = axios.create({
 
 httpClient.interceptors.request.use(
   (req) => {
-    const accessToken = getDataTextStorage(TOKEN_AUTHOR);
     if (req.headers) {
-      req.headers.set(
-        "Authorization",
-        accessToken ? `Bearer ${accessToken}` : ""
-      );
+      if (req.headers instanceof Headers) {
+        req.headers.set("tokenCybersoft", TOKEN_WEB);
+      } else {
+        req.headers["tokenCybersoft"] = TOKEN_WEB;
+      }
     }
+
     return req;
   },
   (err) => {
