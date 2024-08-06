@@ -9,7 +9,7 @@ const SectionInformation = (props: Props) => {
         <div className="row">
           <div
             className="col-md-5 p-md-5 img img-2 d-flex justify-content-center align-items-center"
-            style={{ backgroundImage: "url(images/bg_2.jpg)" }}
+            style={{ backgroundImage: "url(user/images/bg_2.jpg)" }}
           >
             <a
               href="https://vimeo.com/45830194"
@@ -21,8 +21,8 @@ const SectionInformation = (props: Props) => {
           <div className="col-md-7 py-5 wrap-about pb-md-5 ftco-animate">
             <div className="heading-section heading-section-wo-line pt-md-5 pl-md-5 mb-5">
               <div className="ml-md-0">
-                <span className="subheading">Welcome to Deluxe Hotel</span>
-                <h2 className="mb-4">Welcome To Our Hotel</h2>
+                <span className="subheading">Welcome to AIRBNB</span>
+                <h2 className="mb-4">Welcome To Our AIRBNB</h2>
               </div>
             </div>
             <div className="pb-md-5">

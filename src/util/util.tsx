@@ -2,9 +2,11 @@ import axios from "axios";
 import {
   TOKEN_AUTHOR,
   TOKEN_WEB,
+  USER_LOGIN,
   getDataTextStorage,
 } from "../util/utilMethod";
 import { routeLink } from "../App";
+import { UserData } from "../Model/Model";
 
 export const DOMAIN = "https://airbnbnew.cybersoft.edu.vn";
 
@@ -15,11 +17,18 @@ export const httpClient = axios.create({
 
 httpClient.interceptors.request.use(
   (req) => {
+    const accessToken = getDataTextStorage(USER_LOGIN);
+    const dataToken = accessToken
+      ? JSON.parse(accessToken)
+      : { user: {} as UserData, token: "" };
+
     if (req.headers) {
       if (req.headers instanceof Headers) {
         req.headers.set("tokenCybersoft", TOKEN_WEB);
+        req.headers.set("token", dataToken.token);
       } else {
         req.headers["tokenCybersoft"] = TOKEN_WEB;
+        req.headers["token"] = dataToken.token;
       }
     }
 

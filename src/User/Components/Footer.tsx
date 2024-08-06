@@ -95,13 +95,13 @@ const Footer = (props: Props) => {
                   <li>
                     <span className="icon icon-map-marker" />
                     <span className="text">
-                      203 Fake St. Mountain View, San Francisco, California, USA
+                      6C Đ. Số 8, Linh Tây, Thủ Đức, Hồ Chí Minh 71310
                     </span>
                   </li>
                   <li>
                     <a href="#">
                       <span className="icon icon-phone" />
-                      <span className="text">+2 392 3929 210</span>
+                      <span className="text">+0961 051 014</span>
                     </a>
                   </li>
                   <li>
@@ -118,13 +118,15 @@ const Footer = (props: Props) => {
         <div className="row">
           <div className="col-md-12 text-center">
             <p>
-              {/* Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. */}
-              Copyright © All rights reserved | This template is made with{" "}
-              <i className="icon-heart color-danger" aria-hidden="true" /> by{" "}
-              <a href="https://colorlib.com" target="_blank">
-                Colorlib
+              Copyright © All rights reserved
+              <i
+                className="icon-heart color-danger pl-1 pr-1"
+                aria-hidden="true"
+              />{" "}
+              by
+              <a href="/" target="_blank">
+                AIRBNB
               </a>
-              {/* Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. */}
             </p>
           </div>
         </div>

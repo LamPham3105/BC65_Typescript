@@ -1,472 +1,478 @@
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Pagination } from "antd";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { roomApi } from "../../../service/room/roomApi";
+import { locateApi } from "../../../service/locate/locateApi";
+import Loading from "../Antd/Loading";
+import {
+  RoomData,
+  LocateData,
+  LocateError,
+  BookingData,
+} from "../../../Model/Model";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import RangeSliderComponent from "./RangeSliderComponent";
+import { RootState } from "../../../redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { editBooking } from "../../../redux/reducers/bookReducer";
+import useRoute from "../../../hook/useRoute";
+import RoomByLocate from "./RoomByLocate";
+import RoomAll from "./RoomAll";
 
 type Props = {};
 
-const Rooms = (props: Props) => {
+// const Rooms: React.FC<Props> = (props) => {
+//   const dispatch = useDispatch();
+//   const { navigate } = useRoute();
+
+//   const [currentPage, setCurrentPage] = useState<number>(1);
+//   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+//   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+//   const [guests, setGuests] = useState<number>(3);
+//   const [selectedLocation, setSelectedLocation] = useState<string | undefined>(
+//     undefined
+//   );
+//   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
+
+//   const { bookingData } = useSelector((state: RootState) => state.bookReducer);
+
+//   const increaseGuests = () => {
+//     setGuests((prev) => prev + 1);
+//   };
+
+//   const decreaseGuests = () => {
+//     setGuests((prev) => (prev > 1 ? prev - 1 : prev));
+//   };
+
+//   const pageSize = 6;
+
+//   const queryResultRoom: UseQueryResult<RoomData[], LocateError> = useQuery({
+//     queryKey: ["roomListApi"],
+//     queryFn: roomApi.getRoom,
+//     staleTime: 5 * 60 * 1000, // 5 minutes
+//     refetchOnWindowFocus: true,
+//   });
+
+//   const queryResultLocate: UseQueryResult<LocateData[], LocateError> = useQuery(
+//     {
+//       queryKey: ["locateListApi"],
+//       queryFn: locateApi.getLocate,
+//       staleTime: 5 * 60 * 1000, // 5 minutes
+//       refetchOnWindowFocus: true,
+//     }
+//   );
+
+//   useEffect(() => {
+//     if (bookingData) {
+//       setStartDate(bookingData.dateCheckIn || undefined);
+//       setEndDate(bookingData.dateCheckOut || undefined);
+//       setSelectedLocation(bookingData.idLocate?.toString() || undefined);
+//       setGuests(bookingData.totalGuest || 3);
+//     }
+//   }, []);
+
+//   useEffect(() => {
+//     updateDataSearch();
+//   }, [startDate, endDate, selectedLocation, guests]);
+
+//   const updateDataSearch = () => {
+//     if (startDate && endDate && selectedLocation) {
+//       const booking: BookingData = {
+//         dateCheckIn: startDate,
+//         dateCheckOut: endDate,
+//         idLocate: parseInt(selectedLocation),
+//         totalGuest: guests,
+//       };
+//       dispatch(editBooking(booking));
+//     }
+//   };
+
+//   const rooms = queryResultRoom.data;
+//   const locations = queryResultLocate.data;
+
+//   const filteredRooms = useMemo(() => {
+//     if (!rooms) return [];
+//     return rooms.filter((room) => {
+//       const isWithinPriceRange =
+//         room.giaTien >= priceRange[0] && room.giaTien <= priceRange[1];
+//       const maViTri = locations?.find(
+//         (a) => a.id.toString() === selectedLocation
+//       )?.id;
+//       const isLocationMatch = maViTri ? room.maViTri === maViTri : true;
+//       return isWithinPriceRange && isLocationMatch;
+//     });
+//   }, [rooms, priceRange, selectedLocation, locations]);
+
+//   const paginatedRooms = useMemo(() => {
+//     const startIndex = (currentPage - 1) * pageSize;
+//     const endIndex = startIndex + pageSize;
+//     return filteredRooms.slice(startIndex, endIndex);
+//   }, [currentPage, pageSize, filteredRooms]);
+
+//   const handlePageChange = (page: number) => {
+//     setCurrentPage(page);
+//   };
+
+//   const handlePriceRangeChange = (newRange: [number, number]) => {
+//     setPriceRange(newRange);
+//   };
+
+//   const handleLocationChange = (
+//     event: React.ChangeEvent<HTMLSelectElement>
+//   ) => {
+//     setSelectedLocation(event.target.value);
+//     setCurrentPage(1); // Reset to first page when location changes
+//   };
+
+//   if (queryResultRoom.isLoading || queryResultLocate.isLoading) {
+//     return <Loading />;
+//   }
+
+//   if (queryResultRoom.isError || queryResultLocate.isError) {
+//     return (
+//       <div>
+//         Error: {queryResultRoom.error?.message}{" "}
+//         {queryResultLocate.error?.message}
+//       </div>
+//     );
+//   }
+
+//   const total = filteredRooms.length;
+
+//   return (
+//     <section className="ftco-section bg-light">
+//       <div className="container">
+//         <div className="row">
+//           <div className="col-lg-9">
+//             <div className="row">
+//               {paginatedRooms.map((room) => (
+//                 <div
+//                   className="col-sm col-md-6 col-lg-4 ftco-animate"
+//                   key={room.id}
+//                 >
+//                   <div className="room">
+//                     <a
+//                       className="img d-flex justify-content-center align-items-center"
+//                       style={{ backgroundImage: `url(${room.hinhAnh})` }}
+//                       onClick={() => {
+//                         navigate(`/detail/${room.id}`);
+//                       }}
+//                     >
+//                       <div className="icon d-flex justify-content-center align-items-center">
+//                         <span className="icon-search2" />
+//                       </div>
+//                     </a>
+//                     <div className="text p-3 text-center">
+//                       <h3 className="mb-3 truncated-title">
+//                         <a href="rooms-single.html">{room.tenPhong}</a>
+//                       </h3>
+//                       <p>
+//                         <span className="price mr-2">{room.giaTien}</span>
+//                       </p>
+//                       <ul className="list">
+//                         <li>
+//                           <span>Guest:</span> {room.khach}
+//                         </li>
+//                         <li>
+//                           <span>Living room:</span> {room.phongNgu}
+//                         </li>
+//                         <li>
+//                           <span>Bathroom:</span> {room.phongTam}
+//                         </li>
+//                         <li>
+//                           <span>Bed:</span> {room.giuong}
+//                         </li>
+//                       </ul>
+//                       <hr />
+//                       <p className="pt-1">
+//                         <a href="room-single.html" className="btn-custom">
+//                           Book Now <span className="icon-long-arrow-right" />
+//                         </a>
+//                       </p>
+//                     </div>
+//                   </div>
+//                 </div>
+//               ))}
+//             </div>
+//             <Pagination
+//               align="center"
+//               current={currentPage}
+//               total={total}
+//               pageSize={pageSize}
+//               onChange={handlePageChange}
+//             />
+//           </div>
+//           <div className="col-lg-3 sidebar">
+//             <div className="sidebar-wrap bg-light ftco-animate">
+//               <form action="#">
+//                 <div className="fields">
+//                   <div className="form-group">
+//                     <label htmlFor="#">Check-in Date</label>
+//                     <DatePicker
+//                       selected={startDate}
+//                       onChange={(date: Date | null) =>
+//                         setStartDate(date ?? undefined)
+//                       }
+//                       selectsStart
+//                       startDate={startDate}
+//                       endDate={endDate}
+//                       className="form-control"
+//                       placeholderText="Check-in date"
+//                     />
+//                   </div>
+//                   <div className="form-group">
+//                     <label htmlFor="#">Check-out Date</label>
+//                     <DatePicker
+//                       selected={endDate}
+//                       onChange={(date: Date | null) =>
+//                         setEndDate(date ?? undefined)
+//                       }
+//                       selectsEnd
+//                       startDate={startDate}
+//                       endDate={endDate}
+//                       minDate={startDate}
+//                       className="form-control"
+//                       placeholderText="Check-out date"
+//                     />
+//                   </div>
+//                   <h3 className="heading mb-4">Advanced Search</h3>
+//                   <div className="form-group">
+//                     <div className="select-wrap one-third">
+//                       <div className="icon">
+//                         <span className="ion-ios-arrow-down" />
+//                       </div>
+//                       <select
+//                         name=""
+//                         id=""
+//                         className="form-control"
+//                         value={selectedLocation}
+//                         onChange={handleLocationChange}
+//                       >
+//                         <option value="">All Locations</option>
+//                         {locations?.map((locate) => (
+//                           <option key={locate.id} value={locate.id.toString()}>
+//                             {locate.tinhThanh}
+//                           </option>
+//                         ))}
+//                       </select>
+//                     </div>
+//                   </div>
+//                   <div className="form-group">
+//                     <div className="select-wrap one-third">
+//                       <div className="guest-counter customer">
+//                         <div
+//                           className="counter-wrap"
+//                           style={{ padding: "0 75px" }}
+//                         >
+//                           <div
+//                             className="counter-button"
+//                             onClick={decreaseGuests}
+//                           >
+//                             -
+//                           </div>
+//                           <span>{guests}</span>
+//                           <div
+//                             className="counter-button"
+//                             onClick={increaseGuests}
+//                           >
+//                             +
+//                           </div>
+//                         </div>
+//                       </div>
+//                     </div>
+//                   </div>
+//                   <div className="form-group">
+//                     <RangeSliderComponent onChange={handlePriceRangeChange} />
+//                   </div>
+//                 </div>
+//               </form>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </section>
+//   );
+// };
+
+const Rooms: React.FC<Props> = (props) => {
+  const dispatch = useDispatch();
+
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [guests, setGuests] = useState<number>(3);
+  const [selectedLocation, setSelectedLocation] = useState<string | undefined>(
+    undefined
+  );
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
+
+  const { bookingData } = useSelector((state: RootState) => state.bookReducer);
+
+  const increaseGuests = () => {
+    setGuests((prev) => prev + 1);
+  };
+
+  const decreaseGuests = () => {
+    setGuests((prev) => (prev > 1 ? prev - 1 : prev));
+  };
+
+  const queryResultLocate: UseQueryResult<LocateData[], LocateError> = useQuery(
+    {
+      queryKey: ["locateListApi"],
+      queryFn: locateApi.getLocate,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: true,
+    }
+  );
+
+  useEffect(() => {
+    if (bookingData) {
+      setStartDate(bookingData.dateCheckIn || undefined);
+      setEndDate(bookingData.dateCheckOut || undefined);
+      setSelectedLocation(bookingData.idLocate?.toString() || undefined);
+      setGuests(bookingData.totalGuest || 3);
+    }
+  }, []);
+
+  useEffect(() => {
+    updateDataSearch();
+  }, [startDate, endDate, selectedLocation, guests]);
+
+  const updateDataSearch = () => {
+    if (startDate && endDate && selectedLocation) {
+      const booking: BookingData = {
+        dateCheckIn: startDate,
+        dateCheckOut: endDate,
+        idLocate: parseInt(selectedLocation),
+        totalGuest: guests,
+      };
+      dispatch(editBooking(booking));
+    }
+  };
+
+  const locations = queryResultLocate.data;
+
+  const handlePriceRangeChange = (newRange: [number, number]) => {
+    setPriceRange(newRange);
+  };
+
+  const handleLocationChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setSelectedLocation(event.target.value);
+  };
+
+  if (queryResultLocate.isLoading) {
+    return <Loading />;
+  }
+
+  if (queryResultLocate.isError) {
+    return (
+      <div>
+        Error:
+        {queryResultLocate.error?.message}
+      </div>
+    );
+  }
+
+  const renderRoom = () => {
+    if (selectedLocation) {
+      return (
+        <RoomByLocate priceRange={priceRange} maViTri={selectedLocation} />
+      );
+    } else {
+      return <RoomAll priceRange={priceRange} />;
+    }
+  };
+
   return (
     <section className="ftco-section bg-light">
       <div className="container">
         <div className="row">
-          <div className="col-lg-9">
-            <div className="row">
-              <div className="col-sm col-md-6 col-lg-4 ftco-animate">
-                <div className="room">
-                  <a
-                    href="rooms-single.html"
-                    className="img d-flex justify-content-center align-items-center"
-                    style={{ backgroundImage: "url(images/room-1.jpg)" }}
-                  >
-                    <div className="icon d-flex justify-content-center align-items-center">
-                      <span className="icon-search2" />
-                    </div>
-                  </a>
-                  <div className="text p-3 text-center">
-                    <h3 className="mb-3">
-                      <a href="rooms-single.html">Suite Room</a>
-                    </h3>
-                    <p>
-                      <span className="price mr-2">$120.00</span>{" "}
-                      <span className="per">per night</span>
-                    </p>
-                    <ul className="list">
-                      <li>
-                        <span>Max:</span> 3 Persons
-                      </li>
-                      <li>
-                        <span>Size:</span> 45 m2
-                      </li>
-                      <li>
-                        <span>View:</span> Sea View
-                      </li>
-                      <li>
-                        <span>Bed:</span> 1
-                      </li>
-                    </ul>
-                    <hr />
-                    <p className="pt-1">
-                      <a href="room-single.html" className="btn-custom">
-                        Book Now <span className="icon-long-arrow-right" />
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="col-sm col-md-6 col-lg-4 ftco-animate">
-                <div className="room">
-                  <a
-                    href="rooms-single.html"
-                    className="img d-flex justify-content-center align-items-center"
-                    style={{ backgroundImage: "url(images/room-2.jpg)" }}
-                  >
-                    <div className="icon d-flex justify-content-center align-items-center">
-                      <span className="icon-search2" />
-                    </div>
-                  </a>
-                  <div className="text p-3 text-center">
-                    <h3 className="mb-3">
-                      <a href="rooms-single.html">Family Room</a>
-                    </h3>
-                    <p>
-                      <span className="price mr-2">$20.00</span>{" "}
-                      <span className="per">per night</span>
-                    </p>
-                    <ul className="list">
-                      <li>
-                        <span>Max:</span> 3 Persons
-                      </li>
-                      <li>
-                        <span>Size:</span> 45 m2
-                      </li>
-                      <li>
-                        <span>View:</span> Sea View
-                      </li>
-                      <li>
-                        <span>Bed:</span> 1
-                      </li>
-                    </ul>
-                    <hr />
-                    <p className="pt-1">
-                      <a href="room-single.html" className="btn-custom">
-                        Book Now <span className="icon-long-arrow-right" />
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="col-sm col-md-6 col-lg-4 ftco-animate">
-                <div className="room">
-                  <a
-                    href="rooms-single.html"
-                    className="img d-flex justify-content-center align-items-center"
-                    style={{ backgroundImage: "url(images/room-3.jpg)" }}
-                  >
-                    <div className="icon d-flex justify-content-center align-items-center">
-                      <span className="icon-search2" />
-                    </div>
-                  </a>
-                  <div className="text p-3 text-center">
-                    <h3 className="mb-3">
-                      <a href="rooms-single.html">Deluxe Room</a>
-                    </h3>
-                    <p>
-                      <span className="price mr-2">$150.00</span>{" "}
-                      <span className="per">per night</span>
-                    </p>
-                    <ul className="list">
-                      <li>
-                        <span>Max:</span> 5 Persons
-                      </li>
-                      <li>
-                        <span>Size:</span> 45 m2
-                      </li>
-                      <li>
-                        <span>View:</span> Sea View
-                      </li>
-                      <li>
-                        <span>Bed:</span> 2
-                      </li>
-                    </ul>
-                    <hr />
-                    <p className="pt-1">
-                      <a href="room-single.html" className="btn-custom">
-                        Book Now <span className="icon-long-arrow-right" />
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="col-sm col-md-6 col-lg-4 ftco-animate">
-                <div className="room">
-                  <a
-                    href="rooms-single.html"
-                    className="img d-flex justify-content-center align-items-center"
-                    style={{ backgroundImage: "url(images/room-4.jpg)" }}
-                  >
-                    <div className="icon d-flex justify-content-center align-items-center">
-                      <span className="icon-search2" />
-                    </div>
-                  </a>
-                  <div className="text p-3 text-center">
-                    <h3 className="mb-3">
-                      <a href="rooms-single.html">Classic Room</a>
-                    </h3>
-                    <p>
-                      <span className="price mr-2">$130.00</span>{" "}
-                      <span className="per">per night</span>
-                    </p>
-                    <ul className="list">
-                      <li>
-                        <span>Max:</span> 5 Persons
-                      </li>
-                      <li>
-                        <span>Size:</span> 45 m2
-                      </li>
-                      <li>
-                        <span>View:</span> Sea View
-                      </li>
-                      <li>
-                        <span>Bed:</span> 2
-                      </li>
-                    </ul>
-                    <hr />
-                    <p className="pt-1">
-                      <a href="room-single.html" className="btn-custom">
-                        Book Now <span className="icon-long-arrow-right" />
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="col-sm col-md-6 col-lg-4 ftco-animate">
-                <div className="room">
-                  <a
-                    href="rooms-single.html"
-                    className="img d-flex justify-content-center align-items-center"
-                    style={{ backgroundImage: "url(images/room-5.jpg)" }}
-                  >
-                    <div className="icon d-flex justify-content-center align-items-center">
-                      <span className="icon-search2" />
-                    </div>
-                  </a>
-                  <div className="text p-3 text-center">
-                    <h3 className="mb-3">
-                      <a href="rooms-single.html">Superior Room</a>
-                    </h3>
-                    <p>
-                      <span className="price mr-2">$300.00</span>{" "}
-                      <span className="per">per night</span>
-                    </p>
-                    <ul className="list">
-                      <li>
-                        <span>Max:</span> 6 Persons
-                      </li>
-                      <li>
-                        <span>Size:</span> 45 m2
-                      </li>
-                      <li>
-                        <span>View:</span> Sea View
-                      </li>
-                      <li>
-                        <span>Bed:</span> 3
-                      </li>
-                    </ul>
-                    <hr />
-                    <p className="pt-1">
-                      <a href="room-single.html" className="btn-custom">
-                        Book Now <span className="icon-long-arrow-right" />
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="col-sm col-md-6 col-lg-4 ftco-animate">
-                <div className="room">
-                  <a
-                    href="rooms-single.html"
-                    className="img d-flex justify-content-center align-items-center"
-                    style={{ backgroundImage: "url(images/room-6.jpg)" }}
-                  >
-                    <div className="icon d-flex justify-content-center align-items-center">
-                      <span className="icon-search2" />
-                    </div>
-                  </a>
-                  <div className="text p-3 text-center">
-                    <h3 className="mb-3">
-                      <a href="rooms-single.html">Luxury Room</a>
-                    </h3>
-                    <p>
-                      <span className="price mr-2">$500.00</span>{" "}
-                      <span className="per">per night</span>
-                    </p>
-                    <ul className="list">
-                      <li>
-                        <span>Max:</span> 5 Persons
-                      </li>
-                      <li>
-                        <span>Size:</span> 45 m2
-                      </li>
-                      <li>
-                        <span>View:</span> Sea View
-                      </li>
-                      <li>
-                        <span>Bed:</span> 2
-                      </li>
-                    </ul>
-                    <hr />
-                    <p className="pt-1">
-                      <a href="room-single.html" className="btn-custom">
-                        Book Now <span className="icon-long-arrow-right" />
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          {renderRoom()}
+
           <div className="col-lg-3 sidebar">
             <div className="sidebar-wrap bg-light ftco-animate">
-              <h3 className="heading mb-4">Advanced Search</h3>
               <form action="#">
                 <div className="fields">
                   <div className="form-group">
-                    <input
-                      type="text"
-                      id="checkin_date"
-                      className="form-control checkin_date"
-                      placeholder="Check In Date"
+                    <label htmlFor="#">Check-in Date</label>
+                    <DatePicker
+                      selected={startDate}
+                      onChange={(date: Date | null) =>
+                        setStartDate(date ?? undefined)
+                      }
+                      selectsStart
+                      startDate={startDate}
+                      endDate={endDate}
+                      className="form-control"
+                      placeholderText="Check-in date"
                     />
                   </div>
                   <div className="form-group">
-                    <input
-                      type="text"
-                      id="checkin_date"
-                      className="form-control checkout_date"
-                      placeholder="Check Out Date"
+                    <label htmlFor="#">Check-out Date</label>
+                    <DatePicker
+                      selected={endDate}
+                      onChange={(date: Date | null) =>
+                        setEndDate(date ?? undefined)
+                      }
+                      selectsEnd
+                      startDate={startDate}
+                      endDate={endDate}
+                      minDate={startDate}
+                      className="form-control"
+                      placeholderText="Check-out date"
                     />
                   </div>
+                  <h3 className="heading mb-4">Advanced Search</h3>
                   <div className="form-group">
                     <div className="select-wrap one-third">
                       <div className="icon">
                         <span className="ion-ios-arrow-down" />
                       </div>
-                      <select name="" id="" className="form-control">
-                        <option value="">Room Type</option>
-                        <option value="">Suite</option>
-                        <option value="">Family Room</option>
-                        <option value="">Deluxe Room</option>
-                        <option value="">Classic Room</option>
-                        <option value="">Superior Room</option>
-                        <option value="">Luxury Room</option>
+                      <select
+                        name=""
+                        id=""
+                        className="form-control"
+                        value={selectedLocation}
+                        onChange={handleLocationChange}
+                      >
+                        <option value="">All Locations</option>
+                        {locations?.map((locate) => (
+                          <option key={locate.id} value={locate.id.toString()}>
+                            {locate.tinhThanh}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
                   <div className="form-group">
                     <div className="select-wrap one-third">
-                      <div className="icon">
-                        <span className="ion-ios-arrow-down" />
+                      <div className="guest-counter customer">
+                        <div
+                          className="counter-wrap"
+                          style={{ padding: "0 75px" }}
+                        >
+                          <div
+                            className="counter-button"
+                            onClick={decreaseGuests}
+                          >
+                            -
+                          </div>
+                          <span>{guests}</span>
+                          <div
+                            className="counter-button"
+                            onClick={increaseGuests}
+                          >
+                            +
+                          </div>
+                        </div>
                       </div>
-                      <select name="" id="" className="form-control">
-                        <option value="">0 Adult</option>
-                        <option value="">1 Adult</option>
-                        <option value="">2 Adult</option>
-                        <option value="">3 Adult</option>
-                        <option value="">4 Adult</option>
-                        <option value="">5 Adult</option>
-                        <option value="">6 Adult</option>
-                      </select>
                     </div>
                   </div>
                   <div className="form-group">
-                    <div className="select-wrap one-third">
-                      <div className="icon">
-                        <span className="ion-ios-arrow-down" />
-                      </div>
-                      <select name="" id="" className="form-control">
-                        <option value="">0 Children</option>
-                        <option value="">1 Children</option>
-                        <option value="">2 Children</option>
-                        <option value="">3 Children</option>
-                        <option value="">4 Children</option>
-                        <option value="">5 Children</option>
-                        <option value="">6 Children</option>
-                      </select>
-                    </div>
+                    <RangeSliderComponent onChange={handlePriceRangeChange} />
                   </div>
-                  <div className="form-group">
-                    <div className="range-slider">
-                      <span>
-                        <input
-                          type="number"
-                          defaultValue={25000}
-                          min={0}
-                          max={120000}
-                        />{" "}
-                        -
-                        <input
-                          type="number"
-                          defaultValue={50000}
-                          min={0}
-                          max={120000}
-                        />
-                      </span>
-                      <input
-                        defaultValue={1000}
-                        min={0}
-                        max={120000}
-                        step={500}
-                        type="range"
-                      />
-                      <input
-                        defaultValue={50000}
-                        min={0}
-                        max={120000}
-                        step={500}
-                        type="range"
-                      />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <input
-                      type="submit"
-                      defaultValue="Search"
-                      className="btn btn-primary py-3 px-5"
-                    />
-                  </div>
-                </div>
-              </form>
-            </div>
-            <div className="sidebar-wrap bg-light ftco-animate">
-              <h3 className="heading mb-4">Star Rating</h3>
-              <form method="post" className="star-rating">
-                <div className="form-check">
-                  <input
-                    type="checkbox"
-                    className="form-check-input"
-                    id="exampleCheck1"
-                  />
-                  <label className="form-check-label" htmlFor="exampleCheck1">
-                    <p className="rate">
-                      <span>
-                        <i className="icon-star" />
-                        <i className="icon-star" />
-                        <i className="icon-star" />
-                        <i className="icon-star" />
-                        <i className="icon-star" />
-                      </span>
-                    </p>
-                  </label>
-                </div>
-                <div className="form-check">
-                  <input
-                    type="checkbox"
-                    className="form-check-input"
-                    id="exampleCheck1"
-                  />
-                  <label className="form-check-label" htmlFor="exampleCheck1">
-                    <p className="rate">
-                      <span>
-                        <i className="icon-star" />
-                        <i className="icon-star" />
-                        <i className="icon-star" />
-                        <i className="icon-star" />
-                        <i className="icon-star-o" />
-                      </span>
-                    </p>
-                  </label>
-                </div>
-                <div className="form-check">
-                  <input
-                    type="checkbox"
-                    className="form-check-input"
-                    id="exampleCheck1"
-                  />
-                  <label className="form-check-label" htmlFor="exampleCheck1">
-                    <p className="rate">
-                      <span>
-                        <i className="icon-star" />
-                        <i className="icon-star" />
-                        <i className="icon-star" />
-                        <i className="icon-star-o" />
-                        <i className="icon-star-o" />
-                      </span>
-                    </p>
-                  </label>
-                </div>
-                <div className="form-check">
-                  <input
-                    type="checkbox"
-                    className="form-check-input"
-                    id="exampleCheck1"
-                  />
-                  <label className="form-check-label" htmlFor="exampleCheck1">
-                    <p className="rate">
-                      <span>
-                        <i className="icon-star" />
-                        <i className="icon-star" />
-                        <i className="icon-star-o" />
-                        <i className="icon-star-o" />
-                        <i className="icon-star-o" />
-                      </span>
-                    </p>
-                  </label>
-                </div>
-                <div className="form-check">
-                  <input
-                    type="checkbox"
-                    className="form-check-input"
-                    id="exampleCheck1"
-                  />
-                  <label className="form-check-label" htmlFor="exampleCheck1">
-                    <p className="rate">
-                      <span>
-                        <i className="icon-star" />
-                        <i className="icon-star-o" />
-                        <i className="icon-star-o" />
-                        <i className="icon-star-o" />
-                        <i className="icon-star-o" />
-                      </span>
-                    </p>
-                  </label>
                 </div>
               </form>
             </div>

@@ -2,9 +2,25 @@ import * as jwtDecode from "jwt-decode";
 
 const TOKEN_AUTHOR = "accessToken";
 const USER_LOGIN = "userLogin";
-const CART = "cart";
+const BOOK = "Book";
 const TOKEN_WEB =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5Mb3AiOiJCb290Y2FtcCA2NSIsIkhldEhhblN0cmluZyI6IjI1LzExLzIwMjQiLCJIZXRIYW5UaW1lIjoiMTczMjQ5MjgwMDAwMCIsIm5iZiI6MTcwMjMxNDAwMCwiZXhwIjoxNzMyNjQwNDAwfQ._Cum2zMqV8nsbUfpCOe0ILWE_GvP8V8FQnmOR8PRB44";
+
+const phoneRegExp =
+  /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
+
+const numberRegExp = /^[0-9]+$/;
+
+const emailRegExp =
+  /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+const wordRegExp =
+  /^[a-zA-Z_ÀÁÂÃÈÉÊẾÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêếìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ\ ]+$/;
+
+const passRegExp =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,10}$/;
+
+const birthRegExp = /^\d{4}-\d{2}-\d{2}$/;
 
 const getDataTextStorage = (storeName: string) => {
   if (localStorage.getItem(storeName)) {
@@ -24,7 +40,7 @@ const setDataTextStorage = (storeName: string, data: string) => {
   localStorage.setItem(storeName, data);
 };
 
-const setDataJsonStorage = (storeName: string, data: string) => {
+const setDataJsonStorage = (storeName: string, data: any) => {
   localStorage.setItem(storeName, JSON.stringify(data));
 };
 
@@ -62,48 +78,35 @@ function delCookie(name: string) {
   document.cookie = name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
 }
 
-// const convertDateAndTime = (dateTimeString: string) => {
-//   const dateTime = new Date(dateTimeString);
+const convertDateAndTime = (dateTimeString: string): string => {
+  if (!dateTimeString) {
+    return "";
+  }
+  const dateTime = new Date(dateTimeString);
 
-//   const options = {
-//     year: "numeric",
-//     month: "long",
-//     day: "numeric",
-//     hour: "numeric",
-//     minute: "numeric",
-//     second: "numeric",
-//     hour12: true, // Use 12-hour format
-//   };
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    // hour: "numeric",
+    // minute: "numeric",
+    // second: "numeric",
+    hour12: true, // Use 12-hour format
+  };
 
-//   return dateTime.toLocaleString("en-US", options);
-// };
+  return dateTime.toLocaleString("en-US", options);
+};
 
-// function isTokenExpired(token: string) {
-//   try {
-//     const decodedToken = jwtDecode.jwtDecode(token);
-//     const expirationTime = new Date(decodedToken.exp * 1000);
-//     const currentTime = new Date();
-//     return expirationTime < currentTime;
-//   } catch (error) {
-//     return true;
-//   }
-// }
-
-const phoneRegExp =
-  /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
-
-const numberRegExp = /^[0-9]+$/;
-
-const emailRegExp =
-  /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-
-const wordRegExp =
-  /^[a-zA-Z_ÀÁÂÃÈÉÊẾÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêếìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ\ ]+$/;
-
-const passRegExp =
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,10}$/;
-
-const birthRegExp = /^\d{4}-\d{2}-\d{2}$/;
+function isTokenExpired(token: string) {
+  try {
+    const decodedToken = jwtDecode.jwtDecode(token);
+    const expirationTime = new Date((decodedToken.exp ?? 0) * 1000);
+    const currentTime = new Date();
+    return expirationTime < currentTime;
+  } catch (error) {
+    return true;
+  }
+}
 
 const isOver18 = (dateOfBirth: string) => {
   if (!dateOfBirth) return false;
@@ -136,8 +139,8 @@ export {
   removeDataJsonStorage,
   TOKEN_AUTHOR,
   USER_LOGIN,
-  CART,
+  BOOK,
   TOKEN_WEB,
-  // convertDateAndTime,
-  // isTokenExpired,
+  convertDateAndTime,
+  isTokenExpired,
 };

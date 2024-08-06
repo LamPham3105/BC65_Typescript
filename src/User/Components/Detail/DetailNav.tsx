@@ -1,12 +1,10 @@
 import React from "react";
 
-type Props = {};
-
-const DetailNav = (props: Props) => {
+const DetailNav: React.FC = () => {
   return (
     <div
       className="hero-wrap"
-      style={{ backgroundImage: 'url("images/bg_1.jpg")' }}
+      style={{ backgroundImage: 'url("/user/images/bg_1.jpg")' }}
     >
       <div className="overlay" />
       <div className="container">

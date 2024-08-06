@@ -1,40 +1,77 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import { locateApi } from "../../service/locate/locateApi";
-
-interface LocateData {
-  id: number;
-  tenViTri: string;
-  tinhThanh: string;
-  quocGia: string;
-  hinhAnh: string;
-}
-
-interface LocateError {
-  message: string;
-}
+import { locateApi } from "../../../service/locate/locateApi";
+import Loading from "../Antd/Loading";
+import { LocateData, BookingData, LocateError } from "../../../Model/Model";
+import { useSelector, useDispatch } from "react-redux";
+import { editBooking } from "../../../redux/reducers/bookReducer";
+import { RootState } from "../../../redux/store";
+import useRoute from "../../../hook/useRoute";
 
 type Props = {};
 
 const Booking = (props: Props) => {
-  const queryResult: UseQueryResult<LocateData[], LocateError> = useQuery({
-    queryKey: ["locateListApi"],
-    queryFn: locateApi.getLocate,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: true,
-  });
+  const dispatch = useDispatch();
+  const { navigate } = useRoute();
+
+  const { bookingData } = useSelector((state: RootState) => state.bookReducer);
+
+  const queryResultLocate: UseQueryResult<LocateData[], LocateError> = useQuery(
+    {
+      queryKey: ["locateListApi"],
+      queryFn: locateApi.getLocate,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: true,
+    }
+  );
 
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [guests, setGuests] = useState(3);
+  const [selectedLocate, setSelectedLocate] = useState<string | undefined>(
+    undefined
+  );
 
-  if (queryResult.isLoading) {
-    return <div>Loading...</div>;
+  const increaseGuests = () => {
+    setGuests(guests + 1);
+  };
+
+  const decreaseGuests = () => {
+    if (guests > 1) setGuests(guests - 1);
+  };
+
+  const handleBooking = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (startDate && endDate && selectedLocate) {
+      const booking: BookingData = {
+        dateCheckIn: startDate,
+        dateCheckOut: endDate,
+        idLocate: parseInt(selectedLocate),
+        totalGuest: guests,
+      };
+      dispatch(editBooking(booking));
+
+      navigate("/room");
+    }
+  };
+
+  useEffect(() => {
+    if (bookingData) {
+      setStartDate(bookingData.dateCheckIn);
+      setEndDate(bookingData.dateCheckOut);
+      setSelectedLocate(bookingData.idLocate.toString());
+      setGuests(bookingData.totalGuest);
+    }
+  }, []);
+
+  if (queryResultLocate.isLoading) {
+    return <Loading />;
   }
 
-  if (queryResult.error) {
-    return <div>Error: {queryResult.error.message}</div>;
+  if (queryResultLocate.error) {
+    return <div>Error: {queryResultLocate.error.message}</div>;
   }
 
   return (
@@ -42,7 +79,7 @@ const Booking = (props: Props) => {
       <div className="container">
         <div className="row">
           <div className="col-lg-12">
-            <form action="#" className="booking-form">
+            <form action="#" className="booking-form" onSubmit={handleBooking}>
               <div className="row">
                 <div className="col-md-3 d-flex">
                   <div className="form-group p-4 align-self-stretch d-flex align-items-end">
@@ -90,11 +127,18 @@ const Booking = (props: Props) => {
                           <div className="icon">
                             <span className="ion-ios-arrow-down" />
                           </div>
-                          <select name="" id="" className="form-control">
-                            {queryResult.data?.map((locate) => (
+                          <select
+                            name=""
+                            id=""
+                            className="form-control"
+                            value={selectedLocate}
+                            onChange={(e) => setSelectedLocate(e.target.value)}
+                          >
+                            <option value="">Select a location</option>
+                            {queryResultLocate.data?.map((locate) => (
                               <option
                                 key={locate.id}
-                                value="{locate.tinhThanh}"
+                                value={locate.id.toString()}
                               >
                                 {locate.tinhThanh}
                               </option>
@@ -106,22 +150,28 @@ const Booking = (props: Props) => {
                   </div>
                 </div>
                 <div className="col-md d-flex">
-                  <div className="form-group p-4 align-self-stretch d-flex align-items-end">
+                  <div className="customer form-group p-4 align-self-stretch d-flex align-items-end">
                     <div className="wrap">
-                      <label htmlFor="#">Customer</label>
+                      <label style={{ paddingBottom: "15px" }}>Guest</label>
                       <div className="form-field">
                         <div className="select-wrap">
-                          <div className="icon">
-                            <span className="ion-ios-arrow-down" />
+                          <div className="guest-counter">
+                            <div className="counter-wrap">
+                              <div
+                                className="counter-button"
+                                onClick={decreaseGuests}
+                              >
+                                -
+                              </div>
+                              <span>{guests}</span>
+                              <div
+                                className="counter-button"
+                                onClick={increaseGuests}
+                              >
+                                +
+                              </div>
+                            </div>
                           </div>
-                          <select name="" id="" className="form-control">
-                            <option value="">1 Adult</option>
-                            <option value="">2 Adult</option>
-                            <option value="">3 Adult</option>
-                            <option value="">4 Adult</option>
-                            <option value="">5 Adult</option>
-                            <option value="">6 Adult</option>
-                          </select>
                         </div>
                       </div>
                     </div>

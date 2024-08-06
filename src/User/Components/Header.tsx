@@ -1,6 +1,9 @@
 import React from "react";
 import Login from "./Login";
 import Register from "./Register";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import UserMenu from "./UserMenu";
 
 type Props = {};
 
@@ -12,7 +15,7 @@ const Header = (props: Props) => {
         id="ftco-navbar"
       >
         <div className="container">
-          <a className="navbar-brand" href="index.html">
+          <a className="navbar-brand" href="/">
             AirBnB
           </a>
           <button
@@ -29,39 +32,32 @@ const Header = (props: Props) => {
           <div className="collapse navbar-collapse" id="ftco-nav">
             <ul className="navbar-nav ml-auto">
               <li className="nav-item active">
-                <a href="index.html" className="nav-link">
+                <a href="/" className="nav-link">
                   Home
                 </a>
               </li>
               <li className="nav-item">
-                <a href="rooms.html" className="nav-link">
+                <a href="#" className="nav-link">
                   About
                 </a>
               </li>
               <li className="nav-item">
-                <a href="restaurant.html" className="nav-link">
+                <a href="#" className="nav-link">
                   Service
                 </a>
               </li>
               <li className="nav-item">
-                <a href="about.html" className="nav-link">
+                <a href="#" className="nav-link">
                   Pricing
                 </a>
               </li>
               <li className="nav-item">
-                <a href="blog.html" className="nav-link">
+                <a href="#" className="nav-link">
                   Contact
                 </a>
               </li>
-              <li className="nav-item">
-                <button
-                  className="btn btn-outline-light"
-                  data-toggle="modal"
-                  data-target="#authModal"
-                  style={{ marginTop: "15px" }}
-                >
-                  Login / Register
-                </button>
+              <li className="nav-item d-flex align-items-center">
+                <UserMenu />
               </li>
             </ul>
           </div>
@@ -128,6 +124,7 @@ const Header = (props: Props) => {
                   aria-labelledby="login-tab"
                 >
                   {/* Login Form */}
+
                   <Login />
                 </div>
                 <div

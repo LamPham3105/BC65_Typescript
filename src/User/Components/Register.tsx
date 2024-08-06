@@ -12,6 +12,7 @@ import useCustomFormik from "../../hook/useCustomFormik";
 import { userApi } from "../../service/user/userApi";
 import { useMutation } from "@tanstack/react-query";
 import * as Yup from "yup";
+import { useNavigate } from "react-router-dom";
 
 interface LoginFormValues {
   name: string;
@@ -25,6 +26,8 @@ interface LoginFormValues {
 type Props = {};
 
 const Register = (props: Props) => {
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
@@ -73,6 +76,7 @@ const Register = (props: Props) => {
     validationSchema,
     (values) => {
       mutation.mutate(values);
+      navigate(0);
     }
   );
 
@@ -133,6 +137,7 @@ const Register = (props: Props) => {
                 type="button"
                 className="btn btn-outline-secondary"
                 onClick={togglePasswordVisibility}
+                style={{ marginTop: "0px" }}
               >
                 <i
                   className={`fa ${showPassword ? "fa-eye" : "fa-eye-slash"}`}

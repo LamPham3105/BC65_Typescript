@@ -12,7 +12,7 @@ const Carousel = () => {
           <div className="row no-gutters slider-text align-items-center justify-content-center">
             <div className="col-md-12 ftco-animate text-center">
               <div className="text mb-5 pb-3">
-                <h1 className="mb-3">Welcome To Deluxe</h1>
+                <h1 className="mb-3">Welcome To AIRBNB</h1>
                 <h2>Hotels &amp; Resorts</h2>
               </div>
             </div>

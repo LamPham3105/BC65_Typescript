@@ -2,11 +2,11 @@ import React from "react";
 
 type Props = {};
 
-const RestaurantNav = (props: Props) => {
+const ManageNav = (props: Props) => {
   return (
     <div
       className="hero-wrap"
-      style={{ backgroundImage: 'url("images/bg_1.jpg")' }}
+      style={{ backgroundImage: 'url("user/images/bg_1.jpg")' }}
     >
       <div className="overlay" />
       <div className="container">
@@ -15,11 +15,9 @@ const RestaurantNav = (props: Props) => {
             <div className="text">
               <p className="breadcrumbs mb-2">
                 <span className="mr-2">
-                  <a href="index.html">Home</a>
-                </span>{" "}
-                <span>Restaurants</span>
+                  <a href="index.html">Manage</a>
+                </span>
               </p>
-              <h1 className="mb-4 bread">Restaurants</h1>
             </div>
           </div>
         </div>
@@ -28,4 +26,4 @@ const RestaurantNav = (props: Props) => {
   );
 };
 
-export default RestaurantNav;
+export default ManageNav;

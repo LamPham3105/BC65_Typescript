@@ -1,9 +1,17 @@
 import React, { useState } from "react";
-import { emailRegExp, passRegExp } from "../../util/utilMethod";
+import {
+  emailRegExp,
+  getDataJsonStorage,
+  passRegExp,
+  USER_LOGIN,
+} from "../../util/utilMethod";
 import { userApi } from "../../service/user/userApi";
 import useCustomFormik from "../../hook/useCustomFormik";
 import { useMutation } from "@tanstack/react-query";
 import * as Yup from "yup";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { showNotification } from "../../redux/reducers/notificationReducer";
 
 interface LoginFormValues {
   email: string;
@@ -13,6 +21,10 @@ interface LoginFormValues {
 type Props = {};
 
 const Login = (props: Props) => {
+  const dispatch = useDispatch();
+
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
@@ -45,6 +57,12 @@ const Login = (props: Props) => {
     validationSchema,
     (values) => {
       mutation.mutate(values);
+      let data = getDataJsonStorage(USER_LOGIN);
+      if (data) {
+        navigate(0);
+      } else {
+        dispatch(showNotification("Incorrect password or username"));
+      }
     }
   );
 
@@ -87,6 +105,7 @@ const Login = (props: Props) => {
                 type="button"
                 className="btn btn-outline-secondary"
                 onClick={togglePasswordVisibility}
+                style={{ marginTop: "0px" }}
               >
                 <i
                   className={`fa ${showPassword ? "fa-eye" : "fa-eye-slash"}`}

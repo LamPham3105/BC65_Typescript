@@ -1,8 +1,181 @@
-import React from "react";
+import { useParams } from "react-router-dom";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { roomApi } from "../../../service/room/roomApi";
+import { locateApi } from "../../../service/locate/locateApi";
+import Loading from "../Antd/Loading";
+import {
+  RoomData,
+  LocateData,
+  LocateError,
+  CityData,
+  CommentData,
+} from "../../../Model/Model";
+import Amenities from "./Amenities";
+import BookingCard from "./BookingCard";
+import CityMapComponent from "./CityMapComponent";
+import Comments from "./Comment/Comments";
+import { commentApi } from "../../../service/comment/commentApi";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../redux/store";
+import ReviewComponent from "./Comment/ReviewComponent";
 
 type Props = {};
 
-const Detail = (props: Props) => {
+const cities: CityData[] = [
+  { name: "Hà Nội", latitude: 21.0285, longitude: 105.8542 },
+  { name: "Hồ Chí Minh", latitude: 10.8231, longitude: 106.6297 },
+  { name: "Đà Nẵng", latitude: 16.0471, longitude: 108.2068 },
+  { name: "Hải Phòng", latitude: 20.8449, longitude: 106.6881 },
+  { name: "Cần Thơ", latitude: 10.0452, longitude: 105.7469 },
+  { name: "Nha Trang", latitude: 12.2388, longitude: 109.1967 },
+  { name: "Huế", latitude: 16.4637, longitude: 107.5909 },
+  { name: "Vũng Tàu", latitude: 10.3459, longitude: 107.0843 },
+  { name: "Quy Nhơn", latitude: 13.782, longitude: 109.2198 },
+  { name: "Buôn Ma Thuột", latitude: 12.6675, longitude: 108.0383 },
+  { name: "Đà Lạt", latitude: 11.9404, longitude: 108.4583 },
+  { name: "Thanh Hóa", latitude: 19.8075, longitude: 105.7745 },
+  { name: "Vinh", latitude: 18.6796, longitude: 105.6813 },
+  { name: "Phan Thiết", latitude: 10.9289, longitude: 108.1021 },
+  { name: "Thái Nguyên", latitude: 21.5942, longitude: 105.8481 },
+  { name: "Long Xuyên", latitude: 10.3714, longitude: 105.4352 },
+  { name: "Rạch Giá", latitude: 10.0159, longitude: 105.1001 },
+  { name: "Vị Thanh", latitude: 9.7846, longitude: 105.4701 },
+  { name: "Đồng Hới", latitude: 17.4765, longitude: 106.5983 },
+  { name: "Hòa Bình", latitude: 20.8186, longitude: 105.3384 },
+];
+
+const defaultRoomData: RoomData = {
+  id: 0,
+  tenPhong: "Unknown Room",
+  khach: 0,
+  phongNgu: 0,
+  giuong: 0,
+  phongTam: 0,
+  moTa: "No description available.",
+  giaTien: 0,
+  mayGiat: false,
+  banLa: false,
+  tivi: false,
+  dieuHoa: false,
+  wifi: false,
+  bep: false,
+  doXe: false,
+  hoBoi: false,
+  banUi: false,
+  maViTri: 0,
+  hinhAnh: "",
+};
+
+const Detail: React.FC = () => {
+  const params = useParams();
+
+  const { id } = params;
+
+  const { userLogin } = useSelector((state: RootState) => state.userReducer);
+
+  const queryResultRoomByID: UseQueryResult<RoomData, LocateError> = useQuery({
+    queryKey: ["roomByIDApi", id || ""],
+    queryFn: () => roomApi.getRoomByID(id || ""),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: true,
+  });
+
+  const queryResultLocate: UseQueryResult<LocateData[], LocateError> = useQuery(
+    {
+      queryKey: ["locateListApi"],
+      queryFn: locateApi.getLocate,
+      staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: true,
+    }
+  );
+
+  const queryResultCommentByMaPhong: UseQueryResult<
+    CommentData[],
+    LocateError
+  > = useQuery({
+    queryKey: [
+      "commentListByMaPhongApi",
+      queryResultRoomByID.data?.id.toString() || "",
+    ],
+    queryFn: () =>
+      commentApi.getCommentByMaPhong(
+        queryResultRoomByID.data?.id.toString() || ""
+      ),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: true,
+  });
+
+  if (
+    queryResultRoomByID.isLoading ||
+    queryResultLocate.isLoading ||
+    queryResultCommentByMaPhong.isLoading
+  ) {
+    return <Loading />;
+  }
+
+  if (
+    queryResultRoomByID.error &&
+    queryResultLocate.isError &&
+    queryResultCommentByMaPhong.isError
+  ) {
+    return (
+      <div>
+        Error: {queryResultRoomByID.error.message}
+        {queryResultLocate.error.message}
+        {queryResultCommentByMaPhong.error.message}
+      </div>
+    );
+  }
+
+  const getCityName = queryResultLocate.data?.find(
+    (a) => a.id === queryResultRoomByID.data?.maViTri
+  )?.tinhThanh;
+
+  const getCityIndex = (
+    cityName: string | undefined,
+    cities: CityData[]
+  ): number => {
+    const collator = new Intl.Collator("vi", { sensitivity: "base" });
+    return cities.findIndex(
+      (city) => collator.compare(city.name, cityName ?? "") === 0
+    );
+  };
+
+  const cityIndex = getCityIndex(getCityName, cities);
+
+  const totalComment = queryResultCommentByMaPhong.data?.length || 0;
+
+  const getStarsAvg = () => {
+    if (!queryResultCommentByMaPhong.data) {
+      return 0;
+    }
+
+    return queryResultCommentByMaPhong.data.reduce(
+      (acc, comment) => acc + comment.saoBinhLuan,
+      0
+    );
+  };
+
+  const totalStars = getStarsAvg();
+
+  const renderComment = () => {
+    if (userLogin) {
+      return (
+        <div className="col-md-12">
+          <ReviewComponent
+            maPhong={queryResultRoomByID.data?.id.toString() || ""}
+          />
+        </div>
+      );
+    } else {
+      return (
+        <div className="alert alert-warning" role="alert">
+          Login required to comment
+        </div>
+      );
+    }
+  };
+
   return (
     <section className="ftco-section">
       <div className="container">
@@ -10,442 +183,77 @@ const Detail = (props: Props) => {
           <div className="col-lg-8">
             <div className="row">
               <div className="col-md-12 ftco-animate">
-                <h2 className="mb-4">Family Room</h2>
+                <h2 className="mb-4">{queryResultRoomByID.data?.tenPhong}</h2>
                 <div className="single-slider owl-carousel">
                   <div className="item">
                     <div
                       className="room-img"
-                      style={{ backgroundImage: "url(images/room-1.jpg)" }}
+                      style={{
+                        backgroundImage: `url(${queryResultRoomByID.data?.hinhAnh})`,
+                      }}
                     />
                   </div>
                   <div className="item">
                     <div
                       className="room-img"
-                      style={{ backgroundImage: "url(images/room-2.jpg)" }}
+                      style={{
+                        backgroundImage: `url(${queryResultRoomByID.data?.hinhAnh})`,
+                      }}
                     />
                   </div>
                   <div className="item">
                     <div
                       className="room-img"
-                      style={{ backgroundImage: "url(images/room-3.jpg)" }}
+                      style={{
+                        backgroundImage: `url(${queryResultRoomByID.data?.hinhAnh})`,
+                      }}
                     />
                   </div>
                 </div>
               </div>
-              <div className="col-md-12 room-single mt-4 mb-5 ftco-animate">
-                <p>
-                  When she reached the first hills of the Italic Mountains, she
-                  had a last view back on the skyline of her hometown
-                  Bookmarksgrove, the headline of Alphabet Village and the
-                  subline of her own road, the Line Lane. Pityful a rethoric
-                  question ran over her cheek, then she continued her way.
-                </p>
+              <div className="col-md-12 room-single mt-4 ftco-animate">
+                <p>{queryResultRoomByID.data?.moTa}</p>
                 <div className="d-md-flex mt-5 mb-5">
                   <ul className="list">
                     <li>
-                      <span>Max:</span> 3 Persons
+                      <span>Persons:</span> {queryResultRoomByID.data?.khach}
                     </li>
                     <li>
-                      <span>Size:</span> 45 m2
+                      <span>Bed:</span> {queryResultRoomByID.data?.giuong}
                     </li>
                   </ul>
                   <ul className="list ml-md-5">
                     <li>
-                      <span>View:</span> Sea View
+                      <span>Living room:</span>{" "}
+                      {queryResultRoomByID.data?.phongNgu}
                     </li>
                     <li>
-                      <span>Bed:</span> 1
+                      <span>Bathroom:</span>{" "}
+                      {queryResultRoomByID.data?.phongTam}
                     </li>
                   </ul>
                 </div>
-                <p>
-                  When she reached the first hills of the Italic Mountains, she
-                  had a last view back on the skyline of her hometown
-                  Bookmarksgrove, the headline of Alphabet Village and the
-                  subline of her own road, the Line Lane. Pityful a rethoric
-                  question ran over her cheek, then she continued her way.
-                </p>
               </div>
               <div className="col-md-12 room-single ftco-animate mb-5 mt-4">
-                <h3 className="mb-4">Take A Tour</h3>
-                <div className="block-16">
-                  <figure>
-                    <img
-                      src="images/room-4.jpg"
-                      alt="Image placeholder"
-                      className="img-fluid"
-                    />
-                    <a
-                      href="https://vimeo.com/45830194"
-                      className="play-button popup-vimeo"
-                    >
-                      <span className="icon-play" />
-                    </a>
-                  </figure>
-                </div>
+                <h3 className="mb-4">The location</h3>
+                <CityMapComponent city={cities[cityIndex]} />
               </div>
               <div className="col-md-12 properties-single ftco-animate mb-5 mt-4">
-                <h4 className="mb-4">Review &amp; Ratings</h4>
-                <div className="row">
-                  <div className="col-md-6">
-                    <form method="post" className="star-rating">
-                      <div className="form-check">
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          id="exampleCheck1"
-                        />
-                        <label
-                          className="form-check-label"
-                          htmlFor="exampleCheck1"
-                        >
-                          <p className="rate">
-                            <span>
-                              <i className="icon-star" />
-                              <i className="icon-star" />
-                              <i className="icon-star" />
-                              <i className="icon-star" />
-                              <i className="icon-star" /> 100 Ratings
-                            </span>
-                          </p>
-                        </label>
-                      </div>
-                      <div className="form-check">
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          id="exampleCheck1"
-                        />
-                        <label
-                          className="form-check-label"
-                          htmlFor="exampleCheck1"
-                        >
-                          <p className="rate">
-                            <span>
-                              <i className="icon-star" />
-                              <i className="icon-star" />
-                              <i className="icon-star" />
-                              <i className="icon-star" />
-                              <i className="icon-star-o" /> 30 Ratings
-                            </span>
-                          </p>
-                        </label>
-                      </div>
-                      <div className="form-check">
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          id="exampleCheck1"
-                        />
-                        <label
-                          className="form-check-label"
-                          htmlFor="exampleCheck1"
-                        >
-                          <p className="rate">
-                            <span>
-                              <i className="icon-star" />
-                              <i className="icon-star" />
-                              <i className="icon-star" />
-                              <i className="icon-star-o" />
-                              <i className="icon-star-o" /> 5 Ratings
-                            </span>
-                          </p>
-                        </label>
-                      </div>
-                      <div className="form-check">
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          id="exampleCheck1"
-                        />
-                        <label
-                          className="form-check-label"
-                          htmlFor="exampleCheck1"
-                        >
-                          <p className="rate">
-                            <span>
-                              <i className="icon-star" />
-                              <i className="icon-star" />
-                              <i className="icon-star-o" />
-                              <i className="icon-star-o" />
-                              <i className="icon-star-o" /> 0 Ratings
-                            </span>
-                          </p>
-                        </label>
-                      </div>
-                      <div className="form-check">
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          id="exampleCheck1"
-                        />
-                        <label
-                          className="form-check-label"
-                          htmlFor="exampleCheck1"
-                        >
-                          <p className="rate">
-                            <span>
-                              <i className="icon-star" />
-                              <i className="icon-star-o" />
-                              <i className="icon-star-o" />
-                              <i className="icon-star-o" />
-                              <i className="icon-star-o" /> 0 Ratings
-                            </span>
-                          </p>
-                        </label>
-                      </div>
-                    </form>
-                  </div>
-                </div>
+                <Amenities />
               </div>
+              {renderComment()}
               <div className="col-md-12 room-single ftco-animate mb-5 mt-5">
-                <h4 className="mb-4">Available Room</h4>
-                <div className="row">
-                  <div className="col-sm col-md-6 ftco-animate">
-                    <div className="room">
-                      <a
-                        href="rooms.html"
-                        className="img img-2 d-flex justify-content-center align-items-center"
-                        style={{ backgroundImage: "url(images/room-1.jpg)" }}
-                      >
-                        <div className="icon d-flex justify-content-center align-items-center">
-                          <span className="icon-search2" />
-                        </div>
-                      </a>
-                      <div className="text p-3 text-center">
-                        <h3 className="mb-3">
-                          <a href="rooms.html">Suite Room</a>
-                        </h3>
-                        <p>
-                          <span className="price mr-2">$120.00</span>{" "}
-                          <span className="per">per night</span>
-                        </p>
-                        <hr />
-                        <p className="pt-1">
-                          <a href="room-single.html" className="btn-custom">
-                            View Room Details{" "}
-                            <span className="icon-long-arrow-right" />
-                          </a>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-sm col-md-6 ftco-animate">
-                    <div className="room">
-                      <a
-                        href="rooms.html"
-                        className="img img-2 d-flex justify-content-center align-items-center"
-                        style={{ backgroundImage: "url(images/room-2.jpg)" }}
-                      >
-                        <div className="icon d-flex justify-content-center align-items-center">
-                          <span className="icon-search2" />
-                        </div>
-                      </a>
-                      <div className="text p-3 text-center">
-                        <h3 className="mb-3">
-                          <a href="rooms.html">Family Room</a>
-                        </h3>
-                        <p>
-                          <span className="price mr-2">$20.00</span>{" "}
-                          <span className="per">per night</span>
-                        </p>
-                        <hr />
-                        <p className="pt-1">
-                          <a href="room-single.html" className="btn-custom">
-                            View Room Details{" "}
-                            <span className="icon-long-arrow-right" />
-                          </a>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <Comments comments={queryResultCommentByMaPhong.data || []} />
               </div>
             </div>
-          </div>{" "}
-          {/* .col-md-8 */}
+          </div>
           <div className="col-lg-4 sidebar ftco-animate">
-            <div className="sidebar-box">
-              <form action="#" className="search-form">
-                <div className="form-group">
-                  <span className="icon fa fa-search" />
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Type a keyword and hit enter"
-                  />
-                </div>
-              </form>
-            </div>
-            <div className="sidebar-box ftco-animate">
-              <div className="categories">
-                <h3>Categories</h3>
-                <li>
-                  <a href="#">
-                    Properties <span>(12)</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#">
-                    Home <span>(22)</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#">
-                    House <span>(37)</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#">
-                    Villa <span>(42)</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#">
-                    Apartment <span>(14)</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#">
-                    Condominium <span>(140)</span>
-                  </a>
-                </li>
-              </div>
-            </div>
-            <div className="sidebar-box ftco-animate">
-              <h3>Recent Blog</h3>
-              <div className="block-21 mb-4 d-flex">
-                <a
-                  className="blog-img mr-4"
-                  style={{ backgroundImage: "url(images/image_1.jpg)" }}
-                />
-                <div className="text">
-                  <h3 className="heading">
-                    <a href="#">
-                      Even the all-powerful Pointing has no control about the
-                      blind texts
-                    </a>
-                  </h3>
-                  <div className="meta">
-                    <div>
-                      <a href="#">
-                        <span className="icon-calendar" /> July 12, 2018
-                      </a>
-                    </div>
-                    <div>
-                      <a href="#">
-                        <span className="icon-person" /> Admin
-                      </a>
-                    </div>
-                    <div>
-                      <a href="#">
-                        <span className="icon-chat" /> 19
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="block-21 mb-4 d-flex">
-                <a
-                  className="blog-img mr-4"
-                  style={{ backgroundImage: "url(images/image_2.jpg)" }}
-                />
-                <div className="text">
-                  <h3 className="heading">
-                    <a href="#">
-                      Even the all-powerful Pointing has no control about the
-                      blind texts
-                    </a>
-                  </h3>
-                  <div className="meta">
-                    <div>
-                      <a href="#">
-                        <span className="icon-calendar" /> July 12, 2018
-                      </a>
-                    </div>
-                    <div>
-                      <a href="#">
-                        <span className="icon-person" /> Admin
-                      </a>
-                    </div>
-                    <div>
-                      <a href="#">
-                        <span className="icon-chat" /> 19
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="block-21 mb-4 d-flex">
-                <a
-                  className="blog-img mr-4"
-                  style={{ backgroundImage: "url(images/image_3.jpg)" }}
-                />
-                <div className="text">
-                  <h3 className="heading">
-                    <a href="#">
-                      Even the all-powerful Pointing has no control about the
-                      blind texts
-                    </a>
-                  </h3>
-                  <div className="meta">
-                    <div>
-                      <a href="#">
-                        <span className="icon-calendar" /> July 12, 2018
-                      </a>
-                    </div>
-                    <div>
-                      <a href="#">
-                        <span className="icon-person" /> Admin
-                      </a>
-                    </div>
-                    <div>
-                      <a href="#">
-                        <span className="icon-chat" /> 19
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="sidebar-box ftco-animate">
-              <h3>Tag Cloud</h3>
-              <div className="tagcloud">
-                <a href="#" className="tag-cloud-link">
-                  dish
-                </a>
-                <a href="#" className="tag-cloud-link">
-                  menu
-                </a>
-                <a href="#" className="tag-cloud-link">
-                  food
-                </a>
-                <a href="#" className="tag-cloud-link">
-                  sweet
-                </a>
-                <a href="#" className="tag-cloud-link">
-                  tasty
-                </a>
-                <a href="#" className="tag-cloud-link">
-                  delicious
-                </a>
-                <a href="#" className="tag-cloud-link">
-                  desserts
-                </a>
-                <a href="#" className="tag-cloud-link">
-                  drinks
-                </a>
-              </div>
-            </div>
-            <div className="sidebar-box ftco-animate">
-              <h3>Paragraph</h3>
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                Ducimus itaque, autem necessitatibus voluptate quod mollitia
-                delectus aut, sunt placeat nam vero culpa sapiente consectetur
-                similique, inventore eos fugit cupiditate numquam!
-              </p>
-            </div>
+            <BookingCard
+              price={queryResultRoomByID.data?.giaTien || 0}
+              totalComment={totalComment}
+              totalStars={totalStars}
+              roomData={queryResultRoomByID.data || defaultRoomData}
+            />
           </div>
         </div>
       </div>

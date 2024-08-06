@@ -1,10 +1,8 @@
 import { httpClient } from "../../util/util";
 import {
   USER_LOGIN,
-  TOKEN_AUTHOR,
   setDataJsonStorage,
   setDataTextStorage,
-  setCookie,
 } from "../../util/utilMethod";
 
 export class UserApi {
@@ -18,6 +16,31 @@ export class UserApi {
   async postLoginUser(userData: object) {
     try {
       const res = await httpClient.post("/api/auth/signin", userData);
+      if (res) {
+        setDataTextStorage(USER_LOGIN, res.data.content);
+        setDataJsonStorage(USER_LOGIN, res.data.content);
+      }
+      return res.data;
+    } catch (error) {}
+  }
+
+  async getUser() {
+    try {
+      const res = await httpClient.get("/api/users");
+      return res.data.content;
+    } catch (error) {}
+  }
+
+  async postUserAvatar(userData: object) {
+    try {
+      const res = await httpClient.post("/api/users/upload-avatar", userData);
+      return res.data;
+    } catch (error) {}
+  }
+
+  async updateUserInformation(userData: object, id: string) {
+    try {
+      const res = await httpClient.put(`/api/users/${id}`, userData);
       return res.data;
     } catch (error) {}
   }

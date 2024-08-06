@@ -6,7 +6,7 @@ const RoomsNav = (props: Props) => {
   return (
     <div
       className="hero-wrap"
-      style={{ backgroundImage: 'url("images/bg_1.jpg")' }}
+      style={{ backgroundImage: 'url("user/images/bg_1.jpg")' }}
     >
       <div className="overlay" />
       <div className="container">
@@ -16,8 +16,7 @@ const RoomsNav = (props: Props) => {
               <p className="breadcrumbs mb-2">
                 <span className="mr-2">
                   <a href="index.html">Home</a>
-                </span>{" "}
-                <span>About</span>
+                </span>
               </p>
               <h1 className="mb-4 bread">Rooms</h1>
             </div>
