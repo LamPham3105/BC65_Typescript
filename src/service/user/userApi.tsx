@@ -31,6 +31,13 @@ export class UserApi {
     } catch (error) {}
   }
 
+  async postUser(userData: object) {
+    try {
+      const res = await httpClient.post("/api/users", userData);
+      return res.data;
+    } catch (error) {}
+  }
+
   async postUserAvatar(userData: object) {
     try {
       const res = await httpClient.post("/api/users/upload-avatar", userData);
@@ -38,9 +45,18 @@ export class UserApi {
     } catch (error) {}
   }
 
-  async updateUserInformation(userData: object, id: string) {
+  async getUserById(userId: string) {
     try {
-      const res = await httpClient.put(`/api/users/${id}`, userData);
+      const res = await httpClient.get(`/api/users/${userId}`);
+      return res.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateUser(userData: object, userId: string) {
+    try {
+      const res = await httpClient.put(`/api/users/${userId}`, userData);
       return res.data;
     } catch (error) {}
   }
